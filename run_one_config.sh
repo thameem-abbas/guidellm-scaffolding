@@ -28,6 +28,13 @@ if [ -z "$VLLM_BENCHMARK_HOME" ]; then
     exit 1
 fi
 
+# Check if VLLM binary is available
+if ! command -v vllm &> /dev/null; then
+    echo "Error: VLLM binary not found in PATH"
+    echo "Please ensure VLLM is installed and available in your PATH"
+    exit 1
+fi
+
 # Source the benchmark configuration
 if [ -f "benchmark_config.sh" ]; then
     source benchmark_config.sh
