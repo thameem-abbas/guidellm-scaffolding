@@ -28,6 +28,14 @@ if [ -z "$VLLM_BENCHMARK_HOME" ]; then
     exit 1
 fi
 
+# Source the benchmark configuration
+if [ -f "benchmark_config.sh" ]; then
+    source benchmark_config.sh
+else
+    echo "Error: benchmark_config.sh not found"
+    exit 1
+fi
+
 # ENV required
 # 1. VLLM BENCHMARK HOME to cd into and save the current directory to be changed back to
 # 2. Scaling factor for served rate to be set to 1.2 to start and then be adjusted from there.
