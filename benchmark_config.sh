@@ -13,4 +13,5 @@ export SWEEP_RUNTIME=100
 export GUIDELLM__SCALE_FACTOR=1.2 
 
 # Multiplier for throughput testing
-export SWEEP_MULTIPLIERS="0.9 0.95 1.0"
+
+export SWEEP_MULTIPLIERS="0.2 0.4 0.6 0.80.9 0.95 1.0"
