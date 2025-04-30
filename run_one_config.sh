@@ -62,15 +62,6 @@ fi
 CURRENT_DIR=$(pwd)
 cd $VLLM_BENCHMARK_HOME
 
-export GUIDELLM__REQUEST_TIMEOUT="6000"
-
-MAX_THROUGHPUT_RUN_CONCURRENCY=100
-
-# Set the scaling factor to 1.2
-export GUIDELLM__SCALE_FACTOR=1.2
-
-SWEEP_RUNTIME=100
-
 # Create a folder with the output name if it doesn't exist
 mkdir -p $OUTPUT_DIR
 
