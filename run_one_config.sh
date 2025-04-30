@@ -83,6 +83,7 @@ if [ -z "$KV_CACHE_PRECISION" ]; then
     --port 8000 \
     --no-enable-prefix-caching \
     --load-format dummy \
+    --disable-log-requests \
     --max-model-len 8192 > $OUTPUT_DIR/serve.log 2>&1 &
 else
     echo "Running with KV cache precision: $KV_CACHE_PRECISION"
@@ -93,6 +94,7 @@ else
     --no-enable-prefix-caching \
     --kv-cache-dtype $KV_CACHE_PRECISION \
     --load-format dummy \
+    --disable-log-requests \
     --max-model-len 8192 > $OUTPUT_DIR/serve.log 2>&1 &
 fi
 # Save the PID of the last background process
