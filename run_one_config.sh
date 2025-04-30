@@ -137,8 +137,8 @@ python3 benchmark_serving.py \
     --random-output-len 2048 \
     --num-prompts $MAX_THROUGHPUT_RUN_CONCURRENCY \
     --ignore-eos \
-    --seed 42 > $OUTPUT_DIR/benchmark_report_serving_max.txt
-echo "Benchmark report saved to $OUTPUT_DIR/benchmark_report_serving_max.txt"
+    --seed 42 > $OUTPUT_DIR/benchmark_report_serving_max.log
+echo "Benchmark report saved to $OUTPUT_DIR/benchmark_report_serving_max.log"
 
 # Kill the metrics recorder
 echo "Stopping metrics recorder..."
@@ -154,7 +154,7 @@ fi
 # This is due to the the intended request rate being 1.2x of the served request rate.
 # This is empirical and cannot be a sustained way of doing things.
 
-served_req_rate=$(python3 $CURRENT_DIR/parse_serving_report.py --report $OUTPUT_DIR/benchmark_report_serving_max.txt --only-req-rate)
+served_req_rate=$(python3 $CURRENT_DIR/parse_serving_report.py --report $OUTPUT_DIR/benchmark_report_serving_max.log --only-req-rate)
 echo "GUIDELLM intended request rate: $served_req_rate"
 
 # Calculate the max request rate using awk
