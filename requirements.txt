@@ -1,2 +1,3 @@
 # Install GuideLLM based on commit hash
 git+https://github.com/neuralmagic/guidellm.git@61205f8eb111965cefc9805de69437bd3386a8f1
+pandas

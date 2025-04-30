@@ -11,3 +11,6 @@ export SWEEP_RUNTIME=100
 
 # Scaling factor for served rate (1.2 means 20% above max)
 export GUIDELLM__SCALE_FACTOR=1.2 
+
+# Multiplier for throughput testing
+export SWEEP_MULTIPLIERS="0.9 0.95 1.0"

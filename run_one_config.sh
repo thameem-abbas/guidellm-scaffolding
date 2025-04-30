@@ -116,6 +116,17 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Start the metrics recorder in the background and save the PID and log file
+echo "Starting VLLM metrics recorder..."
+python3 $CURRENT_DIR/vllm_metrics_recorder.py \
+    --host localhost \
+    --port 8000 \
+    --wait_until_ready \
+    --interval 0.2 \
+    --dump_path $OUTPUT_DIR/vllm_metrics.csv > $OUTPUT_DIR/vllm_metrics_throughput.log 2>&1 &
+METRICS_RECORDER_PID=$!
+echo "Metrics recorder started with PID: $METRICS_RECORDER_PID"
+
 # Run an overload test with benchmark_serving.py
 python3 benchmark_serving.py \
     --backend vllm \
@@ -128,6 +139,15 @@ python3 benchmark_serving.py \
     --ignore-eos \
     --seed 42 > $OUTPUT_DIR/benchmark_report_serving_max.txt
 echo "Benchmark report saved to $OUTPUT_DIR/benchmark_report_serving_max.txt"
+
+# Kill the metrics recorder
+echo "Stopping metrics recorder..."
+kill -2 $METRICS_RECORDER_PID
+sleep 5
+if ps -p $METRICS_RECORDER_PID > /dev/null; then
+    echo "Killing metrics recorder with PID: $METRICS_RECORDER_PID"
+    kill -9 $METRICS_RECORDER_PID
+fi
 
 # Parse the report to get the served request rate.
 # Max request rate for guidellm is to be 1.2x of the max request rate we get out of the benchmark.
@@ -166,6 +186,17 @@ if [ "$SWEEP_MODE" = "absolute" ]; then
     do
         echo "Running test with request rate: $rate"
         
+        # Start the metrics recorder for this test
+        echo "Starting VLLM metrics recorder for rate $rate..."
+        python3 $CURRENT_DIR/vllm_metrics_recorder.py \
+            --host localhost \
+            --port 8000 \
+            --wait_until_ready \
+            --interval 0.2 \
+            --dump_path $OUTPUT_DIR/vllm_metrics_${rate}.csv | tee $OUTPUT_DIR/vllm_metrics_${rate}.log 2>&1 &
+        METRICS_RECORDER_PID=$!
+        echo "Metrics recorder started with PID: $METRICS_RECORDER_PID"
+        
         # Run the benchmark test with the specified parameters
         guidellm benchmark --target 'http://localhost:8000' \
                  --model $MODEL_NAME \
@@ -176,6 +207,19 @@ if [ "$SWEEP_MODE" = "absolute" ]; then
                  --output-path $OUTPUT_DIR/benchmark_report_serving_$rate.json \
                  --rate $rate
         echo "Benchmark report saved to $OUTPUT_DIR/benchmark_report_serving_$rate.json"
+        
+        # Stop the metrics recorder
+        echo "Stopping metrics recorder for rate $rate..."
+        kill -2 $METRICS_RECORDER_PID
+        sleep 5
+        if ps -p $METRICS_RECORDER_PID > /dev/null; then
+            echo "Killing metrics recorder with PID: $METRICS_RECORDER_PID"
+            kill -9 $METRICS_RECORDER_PID
+        fi
+        
+        # Wait for 30 seconds to ensure system is clear of previous test effects
+        echo "Waiting 30 seconds before next test..."
+        sleep 30
     done
 else
     # Multiplier mode: Calculate rates from multipliers
@@ -184,6 +228,17 @@ else
         # Calculate the actual rate for this sweep point
         ACTUAL_RATE=$(awk -v x="$MAX_REQUEST_RATE" -v y="$i" 'BEGIN { print (x * y) }')
         echo "Running test with request rate multiplier: $i (actual rate: $ACTUAL_RATE)"
+        
+        # Start the metrics recorder for this test
+        echo "Starting VLLM metrics recorder for multiplier $i..."
+        python3 $CURRENT_DIR/vllm_metrics_recorder.py \
+            --host localhost \
+            --port 8000 \
+            --wait_until_ready \
+            --interval 0.2 \
+            --dump_path $OUTPUT_DIR/vllm_metrics_${i}.csv > $OUTPUT_DIR/vllm_metrics_${i}.log 2>&1 &
+        METRICS_RECORDER_PID=$!
+        echo "Metrics recorder started with PID: $METRICS_RECORDER_PID"
         
         # Run the benchmark test with the specified parameters
         guidellm benchmark --target 'http://localhost:8000' \
@@ -195,6 +250,19 @@ else
                  --output-path $OUTPUT_DIR/benchmark_report_serving_$i.json \
                  --rate $ACTUAL_RATE
         echo "Benchmark report saved to $OUTPUT_DIR/benchmark_report_serving_$i.json"
+        
+        # Stop the metrics recorder
+        echo "Stopping metrics recorder for multiplier $i..."
+        kill -2 $METRICS_RECORDER_PID
+        sleep 5
+        if ps -p $METRICS_RECORDER_PID > /dev/null; then
+            echo "Killing metrics recorder with PID: $METRICS_RECORDER_PID"
+            kill -9 $METRICS_RECORDER_PID
+        fi
+        
+        # Wait for 30 seconds to ensure system is clear of previous test effects
+        echo "Waiting 30 seconds before next test..."
+        sleep 30
     done
 fi
 
@@ -206,6 +274,7 @@ if ps -p $SERVE_PID > /dev/null; then
     echo "Killing VLLM server with PID: $SERVE_PID"
     kill -9 $SERVE_PID
 fi
+
 # Wait for 60 seconds to ensure the process is terminated
 wait $SERVE_PID 2>/dev/null
 sleep 60
