@@ -123,7 +123,7 @@ python3 $CURRENT_DIR/vllm_metrics_recorder.py \
     --port 8000 \
     --wait_until_ready \
     --interval 0.2 \
-    --dump_path $OUTPUT_DIR/vllm_metrics.csv > $OUTPUT_DIR/vllm_metrics_throughput.log 2>&1 &
+    --dump_name $OUTPUT_DIR/vllm_throughput 2>&1 &
 METRICS_RECORDER_PID=$!
 echo "Metrics recorder started with PID: $METRICS_RECORDER_PID"
 
@@ -193,7 +193,7 @@ if [ "$SWEEP_MODE" = "absolute" ]; then
             --port 8000 \
             --wait_until_ready \
             --interval 0.2 \
-            --dump_path $OUTPUT_DIR/vllm_metrics_${rate}.csv | tee $OUTPUT_DIR/vllm_metrics_${rate}.log 2>&1 &
+            --dump_name $OUTPUT_DIR/vllm_metrics_${rate} 2>&1 &
         METRICS_RECORDER_PID=$!
         echo "Metrics recorder started with PID: $METRICS_RECORDER_PID"
         
@@ -236,7 +236,7 @@ else
             --port 8000 \
             --wait_until_ready \
             --interval 0.2 \
-            --dump_path $OUTPUT_DIR/vllm_metrics_${i}.csv > $OUTPUT_DIR/vllm_metrics_${i}.log 2>&1 &
+            --dump_name $OUTPUT_DIR/vllm_metrics_${i} 2>&1 &
         METRICS_RECORDER_PID=$!
         echo "Metrics recorder started with PID: $METRICS_RECORDER_PID"
         
